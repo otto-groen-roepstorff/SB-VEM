@@ -1,0 +1,274 @@
+import time
+import numpy as np
+import scipy.sparse.linalg as sp_linalg
+
+# ===================================================================
+# 1. Main Entry Point & Options
+# ===================================================================
+
+def set_default_opts():
+    """Returns the default options for the OverICA algorithm."""
+    return {
+        's': 5,     # Number of generalized covariances multiplier
+        't': None   # Scaling parameter
+    }
+
+def check_opts(opts):
+    """Validates and completes the user-provided options dictionary."""
+    if opts is None:
+        return set_default_opts()
+        
+    defaults = set_default_opts()
+    for k, v in defaults.items():
+        if k not in opts:
+            opts[k] = v
+            
+    return opts
+
+def overica(X, k, opts=None):
+    """
+    Overcomplete Independent Component Analysis via SDP (OverICA).
+    (Podosinnikova et al. 2019)
+    
+    """
+    opts = check_opts(opts)
+    n, p = X.shape
+    globtt = time.time()
+    
+    print('Computing generalized covariances')
+    tt = time.time()
+    s = opts['s'] * k
+    
+    t = opts['t']
+    if t is None:
+        cov_matrix = np.cov(X, rowvar=False)
+        t = 0.05 / np.sqrt(np.max(np.abs(cov_matrix)))
+        
+    C = estimate_gencovs(X, s, t)
+    cum_time = time.time() - globtt
+    
+    print('Computing SVD')
+    globtt_svd = time.time()
+    
+    # Use full SVD if k is close to the matrix rank, otherwise use sparse SVD
+    #getting the bais for the generalized covariance matrices
+    if k >= min(C.shape) - 1:
+        U, _, _ = np.linalg.svd(C, full_matrices=False)
+        Hs = U[:, :k]
+    else:
+        U, S, _ = sp_linalg.svds(C, k=k)
+        sort_idx = np.argsort(S)[::-1]
+        Hs = U[:, sort_idx]
+        
+    svd_time = time.time() - globtt_svd
+    
+    print('Adaptive deflation')
+    globtt_sdp = time.time()
+    
+    ds_est, Ds_est = sdp_adaptive(Hs, k)
+        
+    sdp_time = time.time() - globtt_sdp
+    total_time = time.time() - globtt
+    
+    times = {
+        'total_time': total_time,
+        'cum_time': cum_time,
+        'svd_time': svd_time,
+        'sdp_time': sdp_time
+    }
+    
+    return ds_est, Ds_est, times, Hs
+
+
+# ===================================================================
+# 2. Subspace Estimation (Generalized Covariance)
+# ===================================================================
+
+def gencov(X, omega):
+    """Hessian of the cumulant generating function at direction `omega`."""
+    n, p = X.shape
+    if np.isscalar(omega) or np.size(omega) == 1:
+        omega = np.ones(p) * np.squeeze(omega) / p
+        
+    proj = X @ omega
+    proj_max = np.max(proj)
+    eproj = np.exp(proj - proj_max)
+    sum_eproj = np.sum(eproj)
+    
+    Eomega = (X.T @ eproj) / sum_eproj
+    C = (X.T * eproj) @ X / sum_eproj
+    C = C - np.outer(Eomega, Eomega)
+    
+    # Enforce exact symmetry
+    C = 0.5 * (C + C.T)
+    return C.flatten(order='F')
+
+def estimate_gencovs(X, s, t):
+    """Constructs the differences of generalized covariances."""
+    n, p = X.shape
+    C = np.zeros((p**2, s))
+    
+    # Baseline at omega = 0
+    G0_flat = gencov(X, 0.0) 
+    
+    for i in range(s):
+        omega = np.random.randn(p)
+        omega = t * omega
+        C[:, i] = gencov(X, omega) - G0_flat
+        
+    return C
+
+
+# ===================================================================
+# 3. SDP Deflation Strategy (Adaptive)
+# ===================================================================
+
+def sdp_adaptive(Hs, k):
+    _, Fs = extract_basis(Hs, k)
+    Ds_est = adaptive_deflation(Fs, k)
+    ds_est = approx_ds_from_Ds(Ds_est)
+    return ds_est, Ds_est
+
+def adaptive_deflation(Fs, k, Ds_est=None):
+    p = int(np.sqrt(Fs.shape[0]))
+    
+    if Ds_est is None:
+        Ds_est = np.empty((Fs.shape[0], 0))
+
+    k_current = Ds_est.shape[1]
+    
+    if k_current < k:
+        kloc = k - k_current
+        Fsloc = np.hstack((Fs, Ds_est)) if k_current > 0 else Fs.copy()
+
+        for i in range(1, kloc + 1):
+            U, _, _ = np.linalg.svd(Fsloc, full_matrices=True)
+            idx = kloc - i + 1
+            Fsloc = U[:, :-idx]
+            Esloc = U[:, -idx:]
+            
+            G = Esloc[:, 0].reshape((p, p), order='F')
+            D = majorize_minimize(G, Fsloc)
+            
+            d_flat = D.flatten(order='F').reshape(-1, 1)
+            Ds_est = np.hstack((Ds_est, d_flat))
+            Fsloc = np.hstack((Fsloc, d_flat))
+
+    return Ds_est
+
+
+# ===================================================================
+# 4. Core Optimization (SDP / FISTA)
+# ===================================================================
+
+def majorize_minimize(G, Fs):
+    p = int(np.sqrt(Fs.shape[0]))
+    Dinit = np.eye(p) / p
+    D = Dinit.copy()
+    
+    mu = 5.0
+    maxiter = 100
+    tolerance = 1e-3
+    nmmmax = 100
+
+    iter_count = 1
+    while np.linalg.norm(D, 'fro') < 1.0:
+        u, _ = extract_largest_eigenvector(G)
+        Ginit = np.outer(u, u)
+        D = solve_relaxation_mezcal_approx_fista(
+            Fsbasis=Fs, G=Ginit, mu=mu, Dinit=Dinit, maxiter=maxiter, tolerance=tolerance
+        )
+        G = 0.5 * (D + D.T)
+        iter_count += 1
+        
+        if iter_count > nmmmax:
+            break
+            
+    return D
+
+def solve_relaxation_mezcal_approx_fista(Fsbasis, G, mu, Dinit, maxiter, tolerance):
+    d_sq, _ = Fsbasis.shape
+    d = int(np.sqrt(d_sq))
+
+    B = Dinit.copy()
+    Y = B.copy()
+    L = mu
+    t = 1.0
+
+    primal_vals = np.zeros(maxiter)
+    dual_vals = np.zeros(maxiter)
+
+    for i in range(maxiter):
+        temp = Fsbasis.T @ Y.flatten(order='F')
+        grad = -G + mu * (Fsbasis @ temp).reshape((d, d), order='F')
+        Y = Y - (1.0 / L) * grad
+
+        tnew = 0.5 * (1.0 + np.sqrt(1.0 + 4.0 * t**2))
+        Ysym = 0.5 * (Y + Y.T)
+
+        e_vals, U = np.linalg.eigh(Ysym)
+        e_vals = np.real(e_vals)
+        U = np.real(U)
+
+        eproj = proj_simplex(e_vals)
+        Bnew = U @ np.diag(eproj) @ U.T
+        Bnew = 0.5 * (Bnew + Bnew.T)
+
+        Y = Bnew + ((t - 1.0) / tnew) * (Bnew - B)
+        B = Bnew
+        t = tnew
+
+        if (i % 10) == 0:
+            temp = Fsbasis.T @ B.flatten(order='F')
+            grad = -G + mu * (Fsbasis @ temp).reshape((d, d), order='F')
+
+            primal_vals[i] = -np.sum(G * B) + (mu / 2.0) * np.sum(temp**2)
+            dual_vals[i] = np.min(np.linalg.eigvalsh(grad)) - (mu / 2.0) * np.sum(temp**2)
+
+            dual_max = np.max(dual_vals[: i + 1 : 10])
+            if (primal_vals[i] - dual_max) < tolerance:
+                break
+
+    return B
+
+def proj_simplex(v):
+    v = np.maximum(v, 0.0)
+    u = np.sort(v)[::-1]
+    sv = np.cumsum(u)
+    indices = np.arange(1, len(v) + 1)
+    condition = u > (sv - 1.0) / indices
+    rho = np.where(condition)[0][-1]  
+    theta = max(0.0, (sv[rho] - 1.0) / (rho + 1.0))
+    w = np.maximum(v - theta, 0.0)
+    return w
+
+
+# ===================================================================
+# 5. Utilities & Subroutines
+# ===================================================================
+
+def extract_basis(Es, k):                               
+    Q, _ = np.linalg.qr(Es, mode='complete')
+    Esbasis = Q[:, :k] 
+    Fsbasis = Q[:, k:] 
+    return Esbasis, Fsbasis
+
+def approx_ds_from_Ds(Ds_est):
+    p = int(np.sqrt(Ds_est.shape[0]))
+    k = Ds_est.shape[1]
+    ds_est = np.zeros((p, k))
+    
+    for i in range(k):
+        Di = Ds_est[:, i].reshape((p, p), order='F')
+        u, e = extract_largest_eigenvector(Di)
+        ds_est[:, i] = u * np.sqrt(max(e, 0.0))
+        
+    return ds_est
+
+def extract_largest_eigenvector(D):
+    D = 0.5 * (D + D.T)
+    e_vals, e_vecs = np.linalg.eig(D)
+    idx = np.argmax(np.abs(e_vals))
+    u = np.real(e_vecs[:, idx])
+    e = np.real(e_vals[idx])
+    return u, e

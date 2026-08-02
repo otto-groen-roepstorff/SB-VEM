@@ -20,6 +20,7 @@ fonttools==4.62.1
     # via matplotlib
 ipykernel==7.2.0
     # via overcomplete-learning (pyproject.toml)
+ipympl==0.9.0
 ipython==9.10.1
     # via ipykernel
 ipython-pygments-lexers==1.1.1

@@ -1,0 +1,65 @@
+{
+    "mix_id": "mix_0000",
+    "original_sources": [
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0009.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0032.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0071.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0069.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0011.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0066.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0029.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0062.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0001.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0037.flac"
+    ],
+    "mixing_matrix": [
+        [
+            -0.507627682858998,
+            0.7266463739530011,
+            -0.9206640834335041,
+            -0.4572220210111806,
+            -0.42754522823673513,
+            0.8246020881731482,
+            0.5288832058206718,
+            0.657413433591038,
+            0.742087111598343,
+            -0.6980214254999746
+        ],
+        [
+            -0.16209254745632537,
+            0.5430363521690328,
+            0.31659450778843395,
+            -0.29878692260301437,
+            -0.4136835021356911,
+            -0.3838900003661064,
+            0.1179088835622024,
+            -0.4261111107740323,
+            -0.028859980930112373,
+            0.152302827343437
+        ],
+        [
+            -0.7493571807068782,
+            0.012712525129254398,
+            0.03865172609815219,
+            0.8367664203361268,
+            -0.5416487761912917,
+            -0.2732414095433663,
+            0.6122409452262143,
+            0.12419210809064438,
+            0.592118462794979,
+            0.6490410948227874
+        ],
+        [
+            0.3930699046499657,
+            0.4206363628317928,
+            -0.22505910520965663,
+            -0.0386826078752663,
+            0.5938750964273681,
+            0.31304789058533433,
+            -0.5757960269008758,
+            -0.6089443401305986,
+            -0.3128410670493549,
+            -0.2613725027224621
+        ]
+    ]
+}

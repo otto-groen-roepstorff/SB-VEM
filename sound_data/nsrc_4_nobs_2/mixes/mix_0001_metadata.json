@@ -1,0 +1,23 @@
+{
+    "mix_id": "mix_0001",
+    "original_sources": [
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0046.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0025.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0005.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0000.flac"
+    ],
+    "mixing_matrix": [
+        [
+            0.9140542363696116,
+            0.9329245514850004,
+            0.2843483233158291,
+            0.6612338885379359
+        ],
+        [
+            -0.4055919649867685,
+            -0.36007190024255575,
+            -0.9587210335277929,
+            -0.7501797974947636
+        ]
+    ]
+}

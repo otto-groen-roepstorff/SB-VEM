@@ -33,6 +33,15 @@ sim/Python/
 ```
 
 ------------------------------------------------------------------------
+## Installation
+
+# Navigate to folder install exactly the same packages to get the vitural environment
+``` bash
+uv venv
+uv pip install -r requirements_exact_1.txt
+uv pip install -e .
+```
+
 
 ## Running a study (`scripts/study.py`)
 
@@ -116,12 +125,11 @@ CSV filenames encode the configuration, e.g.
 
 | Notebook | Purpose |
 |----------------------------|------------------------------------|
-| `01_SB_VEM.ipynb` | A toy notebook to see the convergence |
+| `01_SB_VEM.ipynb` | A toy notebook to see the convergence of SB-VEM under different dimension|
 | `02_visualize_effect.ipynb` | visualize recovery behaviour |
 | `03_thesis_plots.ipynb` | generate report/thesis figures from study CSVs |
 | `04_whitening_and_ica.ipynb` | whitening + FastICA plots |
 | `05_error_metrics.ipynb` | error-metric behaviour and correlations across simulated studies |
-| `06_SDP_stability.ipynb` | OverICA / SDP stability experiments |
 
 ------------------------------------------------------------------------
 

@@ -1,0 +1,50 @@
+{
+    "mix_id": "mix_0000",
+    "original_sources": [
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0038.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0033.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/198/19-198-0006.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0051.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0026.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0024.flac",
+        "/Users/otto/LibriMix/storage_dir/LibriSpeech/train-clean-100/19/227/19-227-0034.flac"
+    ],
+    "mixing_matrix": [
+        [
+            -0.08122436598648912,
+            0.22330666809672509,
+            0.922629049475853,
+            0.7411386448289827,
+            0.7767295816587937,
+            -0.4079581256067092,
+            0.31362930850064896
+        ],
+        [
+            0.5967872483602172,
+            0.06720379507094455,
+            -0.17770213301359955,
+            -0.2831630623045636,
+            -0.514003244289087,
+            0.23935789260036924,
+            -0.2037062566362899
+        ],
+        [
+            0.5663177311635196,
+            0.8176369442105254,
+            -0.2747919087776687,
+            -0.4439875656563123,
+            0.32531611986564074,
+            0.3566831329821791,
+            -0.252447846642885
+        ],
+        [
+            -0.5626115777932296,
+            -0.5263911088814897,
+            -0.204124911562823,
+            -0.4164219241594136,
+            0.16328269000082046,
+            0.8056395604681846,
+            0.8924183385991277
+        ]
+    ]
+}
