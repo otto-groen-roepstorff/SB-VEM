@@ -34,8 +34,13 @@ sim/Python/
 
 ------------------------------------------------------------------------
 ## Installation
+ Navigate to folder install exactly the same packages to get the vitural environment
+``` bash
+git clone https://github.com/otto-groen-roepstorff/SB-VEM.git
+```
 
-# Navigate to folder install exactly the same packages to get the vitural environment
+Navigate to folder and rune
+
 ``` bash
 uv venv
 uv pip install -r requirements_exact_1.txt
