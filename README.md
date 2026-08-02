@@ -39,7 +39,7 @@ sim/Python/
 git clone https://github.com/otto-groen-roepstorff/SB-VEM.git
 ```
 
-Navigate to folder and rune
+Navigate to folder and run
 
 ``` bash
 uv venv
