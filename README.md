@@ -9,9 +9,8 @@ editor_options:
 Blind and semi-blind source separation in the **overcomplete** regime
 (more sources than observations, `nsrc > nobs`). Given observations
 `X = A S + noise`, the goal is to recover the mixing matrix `A` and the
-sources `S`. The package implements a variational EM algorithm and a set
-of baseline methods (ICA, OverICA, OLS, semi-blind EM), plus a parallel
-simulation harness for benchmarking them on synthetic data.
+sources `S`. This package is shows how plots and simulations are made for a master thesis Overcomplete Representation Learning with Observed Concepts.
+It is not implemented optimally speed-wise.
 
 ------------------------------------------------------------------------
 
